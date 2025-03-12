@@ -5,22 +5,22 @@ import LeafletMap from "./LeafletMap";
 function Admin() {
   const [drivers] = useState([
     {
-      lat: 39.6510763,
-      lng: 66.9684902,
+      lat: 37.241732,
+      lng: 67.285438,
       user: {
         _id: crypto.randomUUID(),
       },
     },
     {
-      lat: 39.6481163,
-      lng: 66.9649602,
+      lat: 37.239832,
+      lng: 67.287038,
       user: {
         _id: crypto.randomUUID(),
       },
     },
     {
-      lat: 39.6517563,
-      lng: 66.9633302,
+      lat: 37.242132,
+      lng: 67.284738,
       user: {
         _id: crypto.randomUUID(),
       },
