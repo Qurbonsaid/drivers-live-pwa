@@ -19,7 +19,9 @@ function App() {
       );
       localStorage.setItem("update", JSON.stringify(rest.concat(driver)));
     } else {
-      socket.emit("location", driver);
+      socket.emit("location", driver, (res = null) => {
+        console.log(driver, res);
+      });
     }
   };
 
