@@ -3,15 +3,10 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-const CenterMap = ({ position }: { position?: [number, number] }) => {
+const MapRotator = ({ rotation }: { rotation: number }) => {
   const map = useMap();
-
-  useEffect(() => {
-    if (position) {
-      map.setView(position, 16);
-    }
-  }, [position, map]);
-
+  const mapContainer = map.getContainer();
+  mapContainer.style.transform = `rotate(${rotation}deg)`;
   return null;
 };
 
@@ -66,11 +61,13 @@ interface Props {
 
 function LeafletMap({ drivers, setLocation }: Props) {
   const [position, setPosition] = useState<[number, number] | undefined>();
+  const [rotation, setRotation] = useState(0);
   const [hybridTile, setHybridTile] = useState(false);
 
   useEffect(() => {
     const watcher = navigator.geolocation.watchPosition(
       (pos) => {
+        console.log("Geolocation:", pos);
         if (!drivers && setLocation) {
           const newID = crypto.randomUUID();
           setLocation({
@@ -82,6 +79,7 @@ function LeafletMap({ drivers, setLocation }: Props) {
                 (localStorage.setItem("driver", newID), newID),
             },
           });
+          if (pos.coords.heading) setRotation(360 - pos.coords.heading);
         }
         setPosition([pos.coords.latitude, pos.coords.longitude]);
       },
@@ -97,12 +95,23 @@ function LeafletMap({ drivers, setLocation }: Props) {
   return (
     <>
       <MapContainer
-        center={position || [37.240232, 67.286938]}
+        center={
+          drivers?.length
+            ? [
+                +(
+                  drivers.reduce((a, b) => a + b.lat, 0) / drivers.length
+                ).toFixed(6),
+                +(
+                  drivers.reduce((a, b) => a + b.lng, 0) / drivers.length
+                ).toFixed(6),
+              ]
+            : position || [37.240232, 67.286938]
+        }
         zoom={16}
         style={{ height: "500px", width: "100%" }}
         scrollWheelZoom={false}
       >
-        <CenterMap position={position} />
+        <MapRotator rotation={rotation} />
 
         <TileLayerControl
           hybridTile={hybridTile}

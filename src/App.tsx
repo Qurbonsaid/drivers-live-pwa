@@ -13,6 +13,7 @@ function App() {
 
   return (
     <>
+      <br />
       <a href="/admin">Admin</a>
       <h1>Your current location</h1>
 

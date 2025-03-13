@@ -19,6 +19,7 @@
 }
 .PWABadge-toast-message {
     margin-bottom: 8px;
+    color: black;
 }
 .PWABadge-toast-button {
     border: 1px solid #8885;
