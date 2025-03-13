@@ -1,31 +1,26 @@
 import { useState } from "react";
 import PWABadge from "./PWABadge";
 import LeafletMap from "./LeafletMap";
+import socket from "./socket";
+
+interface Driver {
+  user: { _id: string };
+  lat: number;
+  lng: number;
+  rot?: number;
+}
 
 function Admin() {
-  const [drivers] = useState([
-    {
-      lat: 37.241732,
-      lng: 67.285438,
-      user: {
-        _id: crypto.randomUUID(),
-      },
-    },
-    {
-      lat: 37.239832,
-      lng: 67.287038,
-      user: {
-        _id: crypto.randomUUID(),
-      },
-    },
-    {
-      lat: 37.242132,
-      lng: 67.284738,
-      user: {
-        _id: crypto.randomUUID(),
-      },
-    },
-  ]);
+  const [drivers] = useState<Driver[]>([]);
+
+  socket.on("location", (driver: Driver) => {
+    const index = drivers.findIndex((d) => d.user._id === driver.user._id);
+    if (index === -1) {
+      drivers.push(driver);
+    } else {
+      drivers[index] = driver;
+    }
+  });
 
   return (
     <>
