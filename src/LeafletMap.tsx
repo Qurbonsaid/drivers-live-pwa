@@ -3,11 +3,23 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
+interface Props {
+  drivers?: { user: { _id: string }; lat: number; lng: number; rot: number }[];
+  setLocation?: (value: {
+    user: { _id: string };
+    lat: number;
+    lng: number;
+    rot: number;
+  }) => void;
+}
+
 const TileLayerControl = ({
+  drivers,
   position,
   hybridTile,
   setHybridTile,
 }: {
+  drivers?: Props["drivers"];
   position: [number, number];
   hybridTile: boolean;
   setHybridTile: (value: boolean) => void;
@@ -15,8 +27,20 @@ const TileLayerControl = ({
   const map = useMap();
 
   useEffect(() => {
-    map.setView(position, map.getZoom());
-  }, [position, map]);
+    map.setView(
+      drivers?.length
+        ? [
+            +(drivers.reduce((a, b) => a + b.lat, 0) / drivers.length).toFixed(
+              6
+            ),
+            +(drivers.reduce((a, b) => a + b.lng, 0) / drivers.length).toFixed(
+              6
+            ),
+          ]
+        : position,
+      map.getZoom()
+    );
+  }, [drivers, position, map]);
 
   return (
     <div
@@ -49,20 +73,16 @@ const TileLayerControl = ({
   );
 };
 
-interface Props {
-  drivers?: { user: { _id: string }; lat: number; lng: number; rot?: number }[];
-  setLocation?: (value: {
-    user: { _id: string };
-    lat: number;
-    lng: number;
-    rot?: number;
-  }) => void;
-}
-
 function LeafletMap({ drivers, setLocation }: Props) {
-  const [position, setPosition] = useState<[number, number]>([
-    37.240232, 67.286938,
-  ]);
+  const [position, setPosition] = useState<[number, number]>(
+    drivers?.length
+      ? [
+          +(drivers.reduce((a, b) => a + b.lat, 0) / drivers.length).toFixed(6),
+          +(drivers.reduce((a, b) => a + b.lng, 0) / drivers.length).toFixed(6),
+        ]
+      : [37.240232, 67.286938]
+  );
+  const [rotation, setRotation] = useState(0);
   const [hybridTile, setHybridTile] = useState(false);
 
   useEffect(() => {
@@ -73,7 +93,7 @@ function LeafletMap({ drivers, setLocation }: Props) {
           setLocation({
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
-            rot: pos.coords.heading || undefined,
+            rot: pos.coords.heading || rotation,
             user: {
               _id:
                 localStorage.getItem("driver") ||
@@ -82,6 +102,7 @@ function LeafletMap({ drivers, setLocation }: Props) {
           });
         }
         setPosition([pos.coords.latitude, pos.coords.longitude]);
+        setRotation((prev) => pos.coords.heading || prev);
       },
       (err) => {
         console.error("Geolocation error:", err);
@@ -90,28 +111,18 @@ function LeafletMap({ drivers, setLocation }: Props) {
     );
 
     return () => navigator.geolocation.clearWatch(watcher);
-  }, [setLocation, drivers]);
+  }, [setLocation, drivers, rotation]);
 
   return (
     <>
       <MapContainer
-        center={
-          drivers?.length
-            ? [
-                +(
-                  drivers.reduce((a, b) => a + b.lat, 0) / drivers.length
-                ).toFixed(6),
-                +(
-                  drivers.reduce((a, b) => a + b.lng, 0) / drivers.length
-                ).toFixed(6),
-              ]
-            : position
-        }
+        center={position}
         zoom={16}
         style={{ height: "50vh", width: "100%" }}
         scrollWheelZoom={false}
       >
         <TileLayerControl
+          drivers={drivers}
           position={position}
           hybridTile={hybridTile}
           setHybridTile={setHybridTile}
@@ -132,12 +143,11 @@ function LeafletMap({ drivers, setLocation }: Props) {
               key={driver.user._id}
               position={[driver.lat, driver.lng]}
               icon={L.divIcon({
-                html: `<img src="/car.png" style="transform: rotate(${
-                  driver.rot || 0
-                }deg);">`,
+                html: `<img src="/car.png" style="transform: rotate(${driver.rot}deg); width: 60px; height: 60px; object-fit: contain;" />`,
                 iconSize: [60, 60],
                 iconAnchor: [30, 60],
                 popupAnchor: [0, -60],
+                className: "transparent-marker",
               })}
             >
               <Popup>ID: {driver.user._id || "N/A"}</Popup>
@@ -146,11 +156,12 @@ function LeafletMap({ drivers, setLocation }: Props) {
         {!drivers?.length && position && (
           <Marker
             position={position}
-            icon={L.icon({
-              iconUrl: "/car.png",
+            icon={L.divIcon({
+              html: `<img src="/car.png" style="transform: rotate(${rotation}deg); width: 60px; height: 60px; object-fit: contain;" />`,
               iconSize: [60, 60],
               iconAnchor: [30, 60],
               popupAnchor: [0, -60],
+              className: "transparent-marker",
             })}
           >
             <Popup>ID: {localStorage.getItem("driver") || "N/A"}</Popup>

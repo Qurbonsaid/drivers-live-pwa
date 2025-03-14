@@ -14,3 +14,7 @@
   width: 100%;
   height: max-content;
 }
+
+.transparent-marker {
+  background-color: transparent;
+}
