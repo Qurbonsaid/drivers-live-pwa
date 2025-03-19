@@ -1,26 +1,37 @@
 /// <reference lib="webworker" />
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
-import { clientsClaim } from 'workbox-core'
-import { NavigationRoute, registerRoute } from 'workbox-routing'
+import {
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+  precacheAndRoute,
+} from "workbox-precaching";
+import { clientsClaim } from "workbox-core";
+import { NavigationRoute, registerRoute } from "workbox-routing";
 
-declare let self: ServiceWorkerGlobalScope
+declare let self: ServiceWorkerGlobalScope;
 
 // self.__WB_MANIFEST is the default injection point
-precacheAndRoute(self.__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST);
 
 // clean old assets
-cleanupOutdatedCaches()
+cleanupOutdatedCaches();
 
-let allowlist: RegExp[] | undefined
+let allowlist: RegExp[] | undefined;
 // in dev mode, we disable precaching to avoid caching issues
-if (import.meta.env.DEV)
-  allowlist = [/^\/$/]
+if (import.meta.env.DEV) allowlist = [/^\/$/];
 
 // to allow work offline
-registerRoute(new NavigationRoute(
-  createHandlerBoundToURL('index.html'),
-  { allowlist },
-))
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL("index.html"), { allowlist })
+);
 
-self.skipWaiting()
-clientsClaim()
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : {};
+  self.registration.showNotification(data.title || "New Notification", {
+    body: data.body || "You have a new message!",
+    icon: "/pwa-192x192.png",
+    badge: "/pwa-64x64.png",
+  });
+});
+
+self.skipWaiting();
+clientsClaim();
