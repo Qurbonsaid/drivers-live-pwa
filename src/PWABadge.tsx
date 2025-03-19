@@ -67,9 +67,13 @@ function PWABadge() {
     }
 
     try {
-      await fetch("https://bakery.the-watcher.uz/user/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const [{ _id: branch }] = await fetch(
+        "https://bakery.the-watcher.uz/branch",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      ).then((res) => res.json());
+      localStorage.setItem("branch", branch);
     } catch (error) {
       console.error("Failed to authenticate user:", error);
       return;
@@ -105,6 +109,7 @@ function PWABadge() {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "X-Branch": localStorage.getItem("branch")!,
         },
       });
 
