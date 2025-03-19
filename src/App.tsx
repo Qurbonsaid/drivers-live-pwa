@@ -50,6 +50,39 @@ function App() {
         <LeafletMap setLocation={setLocation} />
       </div>
 
+      <br />
+
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const username = formData.get("username") as string;
+          const password = formData.get("password") as string;
+          const { token } = await fetch(
+            "https://bakery.the-watcher.uz/user/login",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            }
+          ).then((res) => res.json());
+          localStorage.setItem("token", token);
+          alert("Logged in");
+        }}
+      >
+        <p>
+          Username: <input type="text" name="username" />
+        </p>
+        <p>
+          Password: <input type="password" name="password" />
+        </p>
+        <p>
+          <input type="submit" value="Login" />
+        </p>
+      </form>
+
       <PWABadge />
     </>
   );

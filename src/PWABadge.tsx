@@ -59,6 +59,22 @@ function PWABadge() {
       return;
     }
 
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("User is not authenticated.");
+      return;
+    }
+
+    try {
+      await fetch("https://bakery.the-watcher.uz/user/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      console.error("Failed to authenticate user:", error);
+      return;
+    }
+
     try {
       const registration = await navigator.serviceWorker.ready;
       console.log(registration);
@@ -86,7 +102,10 @@ function PWABadge() {
       await fetch("https://bakery.the-watcher.uz/notification/subscribe", {
         method: "POST",
         body: JSON.stringify(subscription),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setSubscription(JSON.stringify(subscription));
