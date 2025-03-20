@@ -29,5 +29,23 @@ self.addEventListener("push", (event) => {
   self.registration.showNotification(title || "New Notification", options);
 });
 
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    self.clients
+      .matchAll({
+        type: "window",
+      })
+      .then((clientList) => {
+        console.log(event.notification.data, event.action);
+        for (const client of clientList) {
+          if (client.url === "/" && "focus" in client) return client.focus();
+        }
+        if (self.clients.openWindow) return self.clients.openWindow("/");
+      })
+  );
+});
+
 self.skipWaiting();
 clientsClaim();
