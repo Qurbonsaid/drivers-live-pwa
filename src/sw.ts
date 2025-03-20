@@ -25,12 +25,8 @@ registerRoute(
 );
 
 self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : {};
-  self.registration.showNotification(data.title || "New Notification", {
-    body: data.body || "You have a new message!",
-    icon: "/pwa-192x192.png",
-    badge: "/pwa-64x64.png",
-  });
+  const { title, ...options } = event.data ? event.data.json() : {};
+  self.registration.showNotification(title || "New Notification", options);
 });
 
 self.skipWaiting();
